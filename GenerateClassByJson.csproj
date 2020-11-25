@@ -48,9 +48,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EditorGenerateJsonClass.cs" />
-    <Compile Include="EditorTools.cs" />
-    <Compile Include="MenuTools.cs" />
+    <Compile Include="main\EditorGenerateJsonClass.cs" />
+    <Compile Include="main\EditorTools.cs" />
+    <Compile Include="main\MenuTools.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".vs\GenerateClassByJson\v15\" />
