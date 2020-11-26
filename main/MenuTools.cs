@@ -39,7 +39,7 @@ namespace KuFramework.EditorTools
             {
                 string json = File.ReadAllText(path);
                 //Debug.Log(json);
-                GenerateClass.GenerateJsonClass(json, Application.streamingAssetsPath);
+                GenerateClass.GenerateJsonClass(json, Application.streamingAssetsPath,"Root");
             }
             catch(Exception e)
             {

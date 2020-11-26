@@ -6,7 +6,7 @@ namespace KuFramework.EditorTools
 {
     public class GenerateClass
     {
-        public static void GenerateJsonClass(string json, string outputPath) => new EditorGenerateJsonClass().GenerateJsonClass(json, outputPath);
+        public static void GenerateJsonClass(string json, string outputPath, string rootClassName) => new EditorGenerateJsonClass().GenerateJsonClass(json, outputPath, rootClassName);
     }
     public class Utility
     {
@@ -18,7 +18,7 @@ namespace KuFramework.EditorTools
             }
             return path.Replace('\\', '/');
         }
-    }
+    } 
     public static class ExpendFunc
     {
         public static int IndexOf(this StringBuilder sb, string s)
@@ -33,5 +33,4 @@ namespace KuFramework.EditorTools
             return -1;
         }
     }
-
 }

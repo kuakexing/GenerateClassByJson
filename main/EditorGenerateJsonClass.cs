@@ -14,12 +14,12 @@ namespace KuFramework.EditorTools
         private GenerateClassTemplete mClassTemplete;
         private ClassItem mClassItem;
         private string mOutputPath;
+        private string mFileName;
         private readonly Dictionary<JsonType,string> mTypeDic;
-        private readonly string mFileName;
         public EditorGenerateJsonClass()
         {
             mOutputPath = "";
-            mFileName = "GenerateClass.cs";
+            mFileName = "";
             mClassTemplete = new GenerateClassTemplete();
             mTypeDic = new Dictionary<JsonType, string>()
             {
@@ -32,16 +32,18 @@ namespace KuFramework.EditorTools
                 {JsonType.Object,"class"}
             };
         }
-        public void GenerateJsonClass(string json,string outputPath)
+        public void GenerateJsonClass(string json,string outputPath,string rootClassName)
         {
             mOutputPath = outputPath;
+            mFileName = string.Format("{0}.cs",rootClassName);
             JsonData jsondata = JsonMapper.ToObject(json);
-            Iteration(jsondata,"Root","Root",JsonType.Array);
+            Iteration(jsondata, rootClassName, rootClassName, JsonType.Array);
             CreateScript(mClassTemplete);
         }
         private void CreateScript(GenerateClassTemplete templete)
         {
-            StringBuilder classstr = new StringBuilder("using System.Collections;\r\nusing System.Collections.Generic;\r\n\r\n");
+            StringBuilder classstr = new StringBuilder("using System.Collections;\r\nusing System.Collections.Generic;\r\nusing GameFramework.DataTable;\r\nusing LitJson;\r\n\r\n");
+            classstr.AppendFormat("public class JsonDataRow : IDataRow\r\n{{\r\n\tpublic int Id {{ get; protected set; }}\r\n\tpublic Root JsonData {{ get; protected set; }}\r\n\tpublic bool ParseDataRow(string dataRowString, object userData)\r\n\t{{\r\n\t\tJsonData = JsonMapper.ToObject<Root>(dataRowString);\r\n\t\treturn true;\r\n\t}}\r\n\tpublic bool ParseDataRow(byte[] dataRowBytes, int startIndex, int length, object userData)\r\n\t{{\r\n\t\tJsonData = JsonMapper.ToObject<Root>(dataRowBytes.ToString());\r\n\t\treturn true;\r\n\t}}\r\n}}\r\n");
             foreach (var item in templete.classDic)
             {
                 classstr.Append(CreateClass(item));
@@ -61,7 +63,7 @@ namespace KuFramework.EditorTools
                     }
                 }
                 File.WriteAllText(path, classstr.ToString());
-                Debug.LogFormat("Generate successful! path: {0}", path);
+                Debug.LogFormat("Generate successful!！ path: {0}", path);
                 AssetDatabase.Refresh();
             }
         }
@@ -79,7 +81,7 @@ namespace KuFramework.EditorTools
             {
                 tempstr.Append("#\r\n\t");
             }
-            classstr.AppendFormat("public class {0}\r\n{{\r\n\t#\r\n}}", subClassInfo.Key);
+            classstr.AppendFormat("public struct {0}\r\n{{\r\n\t#\r\n}}", subClassInfo.Key);
             classstr.Replace("#", tempstr.ToString());
             tempstr.Clear();
             int index = 0;
