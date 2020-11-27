@@ -18,7 +18,7 @@ namespace KuFramework.EditorTools
             }
             return path.Replace('\\', '/');
         }
-    } 
+    }
     public static class ExpendFunc
     {
         public static int IndexOf(this StringBuilder sb, string s)

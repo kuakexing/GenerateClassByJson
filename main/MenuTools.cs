@@ -24,7 +24,7 @@ namespace KuFramework.EditorTools
         public static void CreateJsonClass()
         {
             string path = Application.streamingAssetsPath;
-            if(!Directory.Exists(path))
+            if (!Directory.Exists(path))
             {
                 Debug.LogError("No streamingAssets");
                 return;
@@ -39,9 +39,9 @@ namespace KuFramework.EditorTools
             {
                 string json = File.ReadAllText(path);
                 //Debug.Log(json);
-                GenerateClass.GenerateJsonClass(json, Application.streamingAssetsPath,"Root");
+                GenerateClass.GenerateJsonClass(json, Application.streamingAssetsPath, "RootData");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e.Message);
             }

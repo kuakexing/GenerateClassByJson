@@ -15,7 +15,7 @@ namespace KuFramework.EditorTools
         private ClassItem mClassItem;
         private string mOutputPath;
         private string mFileName;
-        private readonly Dictionary<JsonType,string> mTypeDic;
+        private readonly Dictionary<JsonType, string> mTypeDic;
         public EditorGenerateJsonClass()
         {
             mOutputPath = "";
@@ -32,10 +32,10 @@ namespace KuFramework.EditorTools
                 {JsonType.Object,"class"}
             };
         }
-        public void GenerateJsonClass(string json,string outputPath,string rootClassName)
+        public void GenerateJsonClass(string json, string outputPath, string rootClassName)
         {
             mOutputPath = outputPath;
-            mFileName = string.Format("{0}.cs",rootClassName);
+            mFileName = rootClassName;
             JsonData jsondata = JsonMapper.ToObject(json);
             Iteration(jsondata, rootClassName, rootClassName, JsonType.Array);
             CreateScript(mClassTemplete);
@@ -43,7 +43,7 @@ namespace KuFramework.EditorTools
         private void CreateScript(GenerateClassTemplete templete)
         {
             StringBuilder classstr = new StringBuilder("using System.Collections;\r\nusing System.Collections.Generic;\r\nusing GameFramework.DataTable;\r\nusing LitJson;\r\n\r\n");
-            classstr.AppendFormat("public class JsonDataRow : IDataRow\r\n{{\r\n\tpublic int Id {{ get; protected set; }}\r\n\tpublic Root JsonData {{ get; protected set; }}\r\n\tpublic bool ParseDataRow(string dataRowString, object userData)\r\n\t{{\r\n\t\tJsonData = JsonMapper.ToObject<Root>(dataRowString);\r\n\t\treturn true;\r\n\t}}\r\n\tpublic bool ParseDataRow(byte[] dataRowBytes, int startIndex, int length, object userData)\r\n\t{{\r\n\t\tJsonData = JsonMapper.ToObject<Root>(dataRowBytes.ToString());\r\n\t\treturn true;\r\n\t}}\r\n}}\r\n");
+            classstr.AppendFormat("public class {0}JsonDataRow : IDataRow\r\n{{\r\n\tpublic int Id {{ get; protected set; }}\r\n\tpublic {0} JsonData {{ get; protected set; }}\r\n\tpublic bool ParseDataRow(string dataRowString, object userData)\r\n\t{{\r\n\t\tJsonData = JsonMapper.ToObject<{0}>(dataRowString);\r\n\t\treturn true;\r\n\t}}\r\n\tpublic bool ParseDataRow(byte[] dataRowBytes, int startIndex, int length, object userData)\r\n\t{{\r\n\t\tJsonData = JsonMapper.ToObject<{0}>(dataRowBytes.ToString());\r\n\t\treturn true;\r\n\t}}\r\n}}\r\n", mFileName);
             foreach (var item in templete.classDic)
             {
                 classstr.Append(CreateClass(item));
@@ -52,6 +52,7 @@ namespace KuFramework.EditorTools
                 Debug.LogErrorFormat("No directory : {0}", mOutputPath);
             else
             {
+                mFileName = string.Format("{0}.cs", mFileName);
                 string path = Utility.GetRegularPath(Path.Combine(mOutputPath, mFileName));
                 if (File.Exists(path))
                 {
@@ -67,10 +68,10 @@ namespace KuFramework.EditorTools
                 AssetDatabase.Refresh();
             }
         }
-        private StringBuilder CreateClass(KeyValuePair<string,SubClass> subClassInfo)
+        private StringBuilder CreateClass(KeyValuePair<string, SubClass> subClassInfo)
         {
             StringBuilder classstr = new StringBuilder();
-            Dictionary<string,ClassItem> classitemdic = subClassInfo.Value.itemDic;
+            Dictionary<string, ClassItem> classitemdic = subClassInfo.Value.itemDic;
             List<ClassItem> itemlist = new List<ClassItem>();
             foreach (var item in classitemdic.Keys)
             {
@@ -87,15 +88,15 @@ namespace KuFramework.EditorTools
             int index = 0;
             foreach (var item in itemlist)
             {
-                tempstr.AppendFormat("public readonly {0} {1};",item.type,item.name);
+                tempstr.AppendFormat("public readonly {0} {1};", item.type, item.name);
                 index = classstr.IndexOf("#");
-                classstr.Replace("#",tempstr.ToString(),index,1);
+                classstr.Replace("#", tempstr.ToString(), index, 1);
                 tempstr.Clear();
             }
             classstr.Append("\r\n");
             return classstr;
         }
-        private void Iteration(JsonData data,string rootName,string parentName,JsonType parentType)
+        private void Iteration(JsonData data, string rootName, string parentName, JsonType parentType)
         {
             JsonType jsontype = data.GetJsonType();
             switch (jsontype)
@@ -107,34 +108,34 @@ namespace KuFramework.EditorTools
                     ObjectIteration(data, "inst_object", rootName, parentName, parentType);
                     break;
                 default:
-                    CreateItem(data,rootName,jsontype,parentName);
+                    CreateItem(data, rootName, jsontype, parentName);
                     break;
             }
         }
-        private void ArrayIteration(JsonData data, string property, string rootName,string parentName)
+        private void ArrayIteration(JsonData data, string property, string rootName, string parentName)
         {
             if (!mClassTemplete.classDic.ContainsKey(parentName))
                 mClassTemplete.classDic[parentName] = new SubClass();
-            string uppername =  "Sub" + Upper(rootName);
+            string uppername = "Sub" + Upper(rootName);
             if (!mClassTemplete.classDic[parentName].itemDic.ContainsKey(rootName))
-                mClassTemplete.classDic[parentName].itemDic[rootName] = new ClassItem(rootName,string.Format("List<{0}>", uppername),"");
+                mClassTemplete.classDic[parentName].itemDic[rootName] = new ClassItem(rootName, string.Format("List<{0}>", uppername), "");
             List<JsonData> list = GetStructList(data, property) as List<JsonData>;
-            if(list.Count == 0)
+            if (list.Count == 0)
             {
                 if (!mClassTemplete.classDic.ContainsKey(uppername))
                     mClassTemplete.classDic[uppername] = new SubClass();
             }
             foreach (var item in list)
             {
-                Iteration(item, uppername, parentName,JsonType.Array);
+                Iteration(item, uppername, parentName, JsonType.Array);
             }
         }
-        private void ObjectIteration(JsonData data, string property,string rootName,string parentName,JsonType parentType)
+        private void ObjectIteration(JsonData data, string property, string rootName, string parentName, JsonType parentType)
         {
             string upppername = Upper(rootName);
             if (!mClassTemplete.classDic.ContainsKey(upppername))
                 mClassTemplete.classDic[upppername] = new SubClass();
-            if(parentType.Equals(JsonType.Object))
+            if (parentType.Equals(JsonType.Object))
                 if (!mClassTemplete.classDic[parentName].itemDic.ContainsKey(upppername))
                     mClassTemplete.classDic[parentName].itemDic[rootName] = new ClassItem(rootName, upppername, "");
             Dictionary<string, JsonData> dic = GetStructList(data, property) as Dictionary<string, JsonData>;
@@ -159,7 +160,7 @@ namespace KuFramework.EditorTools
             if (collection != null)
             {
                 string upper = sb[0].ToString().ToUpperInvariant();
-                sb = sb.Remove(0,1).Insert(0, upper);
+                sb = sb.Remove(0, 1).Insert(0, upper);
             }
             return sb.ToString();
         }
@@ -167,17 +168,17 @@ namespace KuFramework.EditorTools
     }
     internal class GenerateClassTemplete
     {
-        public Dictionary<string,SubClass> classDic = new Dictionary<string, SubClass>();
+        public Dictionary<string, SubClass> classDic = new Dictionary<string, SubClass>();
     }
     internal class SubClass
     {
-        public Dictionary<string,ClassItem> itemDic = new Dictionary<string, ClassItem>();
+        public Dictionary<string, ClassItem> itemDic = new Dictionary<string, ClassItem>();
     }
     internal struct ClassItem
     {
-        public string  name;
-        public string  type;
-        public string  value;
+        public string name;
+        public string type;
+        public string value;
 
         public ClassItem(string name, string type, string value)
         {
