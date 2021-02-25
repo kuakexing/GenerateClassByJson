@@ -140,6 +140,9 @@ namespace KuFramework.EditorTools
             if(parentType.Equals(JsonType.Array))
                 if (!mClassTemplete.classDic[parentName].itemDic.ContainsKey(upppername))
                     mClassTemplete.classDic[parentName].itemDic[upppername] = new ClassItem(rootName, string.Format("List<{0}>", upppername), "");
+            if (parentType.Equals(JsonType.Object))
+                if (!mClassTemplete.classDic[parentName].itemDic.ContainsKey(upppername))
+                    mClassTemplete.classDic[parentName].itemDic[upppername] = new ClassItem(rootName, string.Format("{0}", upppername), "");
 
             Dictionary<string, JsonData> dic = GetStructList(data, property) as Dictionary<string, JsonData>;
             foreach (var item in dic.Keys)
